@@ -10,6 +10,9 @@ __pycache__/
 venv/
 env/
 
+# API keys
+.env
+
 # Dataset files
 *.csv
 *.parquet
