@@ -148,6 +148,10 @@ def build_model_comparison(
 
 
 
+
+
+
+
 # analyse des retours des modèles et sélection des mauvaises réponses pour analyse
 def get_model_errors(
     df_gemini,
@@ -159,7 +163,6 @@ def get_model_errors(
     et retourne uniquement les mauvaises réponses.
     """
 
-    # Colonnes communes à conserver
     result_columns = [
         "sample_id",
         "reference_letter",
@@ -169,7 +172,6 @@ def get_model_errors(
         "declared_confidence",
     ]
 
-    # Préparation Gemini
     df_gemini_errors = (
         df_gemini[result_columns]
         .copy()
@@ -177,7 +179,6 @@ def get_model_errors(
 
     df_gemini_errors["model_name"] = "Gemini"
 
-    # Préparation OpenAI
     df_openai_errors = (
         df_openai[result_columns]
         .copy()
@@ -185,7 +186,6 @@ def get_model_errors(
 
     df_openai_errors["model_name"] = "OpenAI"
 
-    # Concaténation des deux modèles
     df_all_results = pd.concat(
         [
             df_gemini_errors,
@@ -194,11 +194,11 @@ def get_model_errors(
         ignore_index=True,
     )
 
-    # Ajout du contexte de la question
     context_by_sample = (
         df_context[
             [
                 "sample_id",
+                "medical_subject",
                 "question_context",
             ]
         ]
@@ -216,7 +216,6 @@ def get_model_errors(
         )
     )
 
-    # Sélection uniquement des mauvaises réponses
     df_errors = (
         df_all_results.loc[
             df_all_results["is_correct"] == False
@@ -225,7 +224,6 @@ def get_model_errors(
         .reset_index(drop=True)
     )
 
-    # Renommage pour rendre le tableau plus lisible
     df_errors = df_errors.rename(
         columns={
             "predicted_letter": "model_response",
@@ -234,10 +232,10 @@ def get_model_errors(
         }
     )
 
-    # Ordre final des colonnes
     error_columns = [
         "model_name",
         "sample_id",
+        "medical_subject",
         "question_context",
         "reference_letter",
         "model_response",
@@ -247,6 +245,7 @@ def get_model_errors(
     ]
 
     return df_errors[error_columns]
+
 
 
 def save_csv(
@@ -266,6 +265,25 @@ def save_csv(
         encoding="utf-8-sig",
     )
     return csv_path
+
+
+def save_parquet(
+    df,
+    output_dir,
+    filename,
+):
+    """
+    Enregistre un DataFrame au format Parquet.
+    """
+
+    parquet_path = output_dir / filename
+
+    df.to_parquet(
+        parquet_path,
+        index=False,
+    )
+
+    return parquet_path
 
 
 

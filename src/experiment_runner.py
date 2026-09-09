@@ -27,6 +27,8 @@ result_columns = [
 def run_experiment_batch(
     experiments,
     runner,
+    llm_client,
+    llm_name,
     model_name,
     output_path,
     pause_seconds=1,
@@ -58,6 +60,8 @@ def run_experiment_batch(
         result = runner(
             experiment_row=experiment_row,
             model_name=model_name,
+            llm_client=llm_client,
+            llm_name=llm_name,
         )
         results.append(result)
 

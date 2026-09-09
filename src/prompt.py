@@ -21,7 +21,7 @@ Confiance : <nombre entier compris entre 0 et 100>
 """.strip()
 
 
-def prepare_row(df):
+def prepare_sample(df):
     rows = []
 
     for _, row in df.iterrows():

@@ -2,28 +2,44 @@ import time
 
 
 
+import time
+
+
 def call_llm(
     prompt,
     model_name,
     llm_client,
+    llm_name,
 ):
     start_time = time.perf_counter()
 
     try:
-        interaction = (
-            llm_client.interactions.create(
+        if llm_name == "openai":
+            response = llm_client.responses.create(
                 model=model_name,
                 input=prompt,
                 store=False,
             )
-        )
 
-        raw_response = interaction.output_text
+            raw_response = response.output_text
+
+        elif llm_name == "gemini":
+            response = llm_client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+            )
+
+            raw_response = response.text
+
+        else:
+            raise ValueError(
+                f"Fournisseur non pris en charge : {llm_name}"
+            )
+
         generation_error = None
 
     except Exception as error:
         raw_response = None
-
         generation_error = (
             f"{type(error).__name__}: {error}"
         )
@@ -39,9 +55,10 @@ def call_llm(
     }
 
 
+
 def run_single_experiment(
     experiment_row,
-    provider_name,
+    llm_name,
     model_name,
     llm_client,
 ):
@@ -50,6 +67,7 @@ def run_single_experiment(
         prompt=experiment_row["prompt_text"],
         model_name=model_name,
         llm_client=llm_client,
+        llm_name=llm_name,
     )
 
     parsed_result = parse_model_response(
@@ -72,7 +90,7 @@ def run_single_experiment(
 
     return {
         "sample_id": experiment_row["sample_id"],
-        "model_name": provider_name,
+        "model_name": llm_name,
         "model_version": model_name,
         "prompt_version": experiment_row[
             "prompt_version"
