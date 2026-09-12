@@ -33,7 +33,6 @@ def prepare_sample(df):
                     question_context=row["question_context"]
                 ),
                 "reference_letter": row["reference_letter"],
-                "reference_answer": row["reference_answer"],
                 "medical_subject": row["medical_subject"],
                 "question_type": row["question_type"],
             }
