@@ -33,9 +33,7 @@ def prepare_sample(df):
                     question_context=row["question_context"]
                 ),
                 "reference_letter": row["reference_letter"],
-                "medical_subject": row["medical_subject"],
-                "question_type": row["question_type"],
-            }
+                "medical_subject": row["medical_subject"],            }
         )
 
     return pd.DataFrame(rows)
