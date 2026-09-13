@@ -44,6 +44,9 @@ def call_llm(
         # MedGemma
         elif llm_name == "medgemma":
 
+            model = llm_client["model"]
+            processor = llm_client["processor"]
+
             messages = [
                 {
                     "role": "user",
@@ -56,13 +59,32 @@ def call_llm(
                 }
             ]
 
-            response = llm_client(
-                text=messages,
-                max_new_tokens=512,
+            formatted_prompt = processor.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
             )
 
-            raw_response = (
-                response[0]["generated_text"][-1]["content"]
+            inputs = processor(
+                text=formatted_prompt,
+                return_tensors="pt",
+            ).to(model.device)
+
+            with torch.inference_mode():
+                outputs = model.generate(
+                    **inputs,
+                    max_new_tokens=256,
+                    do_sample=False,
+                )
+
+            generated_tokens = outputs[
+                0,
+                inputs["input_ids"].shape[-1]:
+            ]
+
+            raw_response = processor.decode(
+                generated_tokens,
+                skip_special_tokens=True,
             )
 
 
@@ -90,7 +112,6 @@ def call_llm(
         "latency_seconds": latency_seconds,
         "generation_error": generation_error,
     }
-
 
 
 def run_single_experiment(
