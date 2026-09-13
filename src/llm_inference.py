@@ -5,6 +5,9 @@ import time
 import time
 
 
+import time
+
+
 def call_llm(
     prompt,
     model_name,
@@ -14,7 +17,10 @@ def call_llm(
     start_time = time.perf_counter()
 
     try:
+
+        # OpenAI
         if llm_name == "openai":
+
             response = llm_client.responses.create(
                 model=model_name,
                 input=prompt,
@@ -23,13 +29,42 @@ def call_llm(
 
             raw_response = response.output_text
 
+
+        # Gemini
         elif llm_name == "gemini":
+
             response = llm_client.models.generate_content(
                 model=model_name,
                 contents=prompt,
             )
 
             raw_response = response.text
+
+
+        # MedGemma
+        elif llm_name == "medgemma":
+
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": prompt,
+                        }
+                    ],
+                }
+            ]
+
+            response = llm_client(
+                text=messages,
+                max_new_tokens=512,
+            )
+
+            raw_response = (
+                response[0]["generated_text"][-1]["content"]
+            )
+
 
         else:
             raise ValueError(
@@ -39,7 +74,9 @@ def call_llm(
         generation_error = None
 
     except Exception as error:
+
         raw_response = None
+
         generation_error = (
             f"{type(error).__name__}: {error}"
         )
